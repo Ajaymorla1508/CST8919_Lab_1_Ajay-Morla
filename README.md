@@ -1,35 +1,68 @@
-# CST8919_Lab_1_Ajay-Morla
-# Flask Auth0 Protected Page Demo
+# Flask Auth0 Authentication Example
 
-## Overview
+This tutorial demonstrates how to add user login to a Python web application built with the Flask framework and Authlib OAuth library.
 
-This is a simple Flask web application demonstrating authentication with Auth0. It includes:
-- A public home page
-- A login/logout flow using Auth0
-- A `/protected` route that only authenticated users can access
+---
 
-## Setup Instructions
+## I want to integrate with my app
 
-### 1. Clone the Repository
+**Estimated time:** 15 minutes
 
-```bash
-git clone <your-repo-url>
-cd lab1-8919
+### System requirements
+
+- Python 3
+- Authlib 1.0+
+- Flask 2.0+
+
+---
+
+## Configure Auth0
+
+### Get Your Application Keys
+
+When you sign up for Auth0, a new application is created for you (or you can create a new one).  
+You will need the following details from your Auth0 Application Settings:
+
+- **Domain**
+- **Client ID**
+- **Client Secret**
+
+### Configure Callback URLs
+
+Add the following to your Auth0 Application Settings:
+
+- **Allowed Callback URLs:**  
+  `http://localhost:3000/callback`
+
+### Configure Logout URLs
+
+- **Allowed Logout URLs:**  
+  `http://localhost:3000`
+
+---
+
+## Install dependencies
+
+Create a `requirements.txt` file:
+
+```txt
+flask>=2.0.3
+python-dotenv>=0.19.2
+authlib>=1.0
+requests>=2.27.1
 ```
 
-### 2. Configure Auth0
+Install dependencies:
 
-1. Sign up or log in to [Auth0](https://auth0.com/).
-2. Create a new "Regular Web Application".
-3. In the application settings, set:
-   - **Allowed Callback URLs:** `http://localhost:3000/callback`
-   - **Allowed Logout URLs:** `http://localhost:3000/`
-   - **Allowed Web Origins:** `http://localhost:3000`
-4. Copy your **Domain**, **Client ID**, and **Client Secret**.
+```bash
+pip install -r requirements.txt
+```
 
-### 3. Create a `.env` File
+---
 
-Create a `.env` file in the project root with the following content (replace with your Auth0 values):
+## Configure your .env file
+
+Create a `.env` file in your project directory:
 
 ```properties
 AUTH0_CLIENT_ID=your_auth0_client_id
@@ -38,28 +71,142 @@ AUTH0_DOMAIN=your_auth0_domain
 APP_SECRET_KEY=your_flask_secret_key
 ```
 
-Example:
-```properties
-AUTH0_CLIENT_ID=igLCWfzpmpTPLa699Kqjyd2kSROr3Hol
-AUTH0_CLIENT_SECRET=Sr0JZ30P3rXZ7mSCaY_FdEEQy0n0ltVcpDWUhwSIG39pGdrHxRG8tSNkHZEyfpaj
-AUTH0_DOMAIN=dev-y8z4qjl7ocq73kel.us.auth0.com
-APP_SECRET_KEY=309476c9dbffc262e4abd131e9b5b770076335f752ec458ae039ac43843c541e
-```
-
-### 4. Install Dependencies
+Generate a suitable string for `APP_SECRET_KEY` using:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+openssl rand -hex 32
 ```
 
-If you don’t have a `requirements.txt`, use:
-```bash
-pip install Flask python-dotenv Authlib
+---
+
+## Setup your application
+
+Create a `server.py` file and add the following:
+
+```python
+import json
+from os import environ as env
+from urllib.parse import quote_plus, urlencode
+
+from authlib.integrations.flask_client import OAuth
+from dotenv import find_dotenv, load_dotenv
+from flask import Flask, redirect, render_template, session, url_for
+from functools import wraps
+
+ENV_FILE = find_dotenv()
+if ENV_FILE:
+    load_dotenv(ENV_FILE)
+
+app = Flask(__name__)
+app.secret_key = env.get("APP_SECRET_KEY")
+
+oauth = OAuth(app)
+oauth.register(
+    "auth0",
+    client_id=env.get("AUTH0_CLIENT_ID"),
+    client_secret=env.get("AUTH0_CLIENT_SECRET"),
+    client_kwargs={"scope": "openid profile email"},
+    server_metadata_url=f'https://{env.get("AUTH0_DOMAIN")}/.well-known/openid-configuration'
+)
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user' not in session:
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route("/login")
+def login():
+    return oauth.auth0.authorize_redirect(
+        redirect_uri=url_for("callback", _external=True)
+    )
+
+@app.route("/callback", methods=["GET", "POST"])
+def callback():
+    token = oauth.auth0.authorize_access_token()
+    userinfo = token.get("userinfo")
+    session["user"] = userinfo
+    return redirect("/")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(
+        "https://" + env.get("AUTH0_DOMAIN")
+        + "/v2/logout?"
+        + urlencode(
+            {
+                "returnTo": url_for("home", _external=True),
+                "client_id": env.get("AUTH0_CLIENT_ID"),
+            },
+            quote_via=quote_plus,
+        )
+    )
+
+@app.route("/protected")
+@requires_auth
+def protected():
+    user = session.get("user")
+    return render_template('protected.html', user=user)
+
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(env.get("PORT", 3000)))
 ```
 
-### 5. Run the App
+---
+
+## Add templates
+
+Create a `templates` directory and add these files:
+
+### `templates/home.html`
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    {% if session.user %}
+        <h1>Welcome {{ session.user.name }}!</h1>
+        <p><a href="/protected">Go to Protected Page</a></p>
+        <p><a href="/logout">Logout</a></p>
+    {% else %}
+        <h1>Welcome!</h1>
+        <p><a href="/login">Login</a></p>
+        <p><a href="/protected">Go to Protected Page</a></p>
+    {% endif %}
+</body>
+</html>
+```
+
+### `templates/protected.html`
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protected</title>
+</head>
+<body>
+    <h1>Protected Page</h1>
+    <p>Hi {{ user['name'] }}!</p>
+    <p>This page is protected and requires login.</p>
+    <p><a href="/logout">Logout</a></p>
+</body>
+</html>
+```
+
+---
+
+## Run your application
 
 ```bash
 python3 server.py
@@ -75,14 +222,6 @@ Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## What’s in the Code
-
-- **server.py**: Main Flask app with Auth0 integration and protected route.
-- **templates/**: HTML templates for home and protected pages.
-- **.env**: Environment variables for Auth0 and Flask secret key.
-
----
-
 ## What I Learned
 
 - How to integrate Auth0 authentication in a Flask app.
@@ -92,4 +231,5 @@ Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-Feel free to reach out if you have any questions!
+**New to Auth0?**  
+Learn [How Auth0 works](https://auth0.com/docs/get-started), how it integrates with Regular Web Applications, and which protocol it uses.
