@@ -58,7 +58,7 @@ pip install -r requirements.txt
 
 ---
 
-## Configure your .env file
+## Configured .env file
 
 Created a `.env` file in your project directory:
 
@@ -215,7 +215,7 @@ Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Demo Video
 
-[Watch the 5-minute demo on YouTube]([https://www.youtube.com/watch?v=YOUR_VIDEO_ID](https://www.youtube.com/watch?v=u6ZSNnYqSdc))
+[Watch the 5-minute demo on YouTube]([https://www.youtube.com/watch?v=u6ZSNnYqSdc])
 
 ---
 
