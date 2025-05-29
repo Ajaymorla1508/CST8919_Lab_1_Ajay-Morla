@@ -1,12 +1,10 @@
 # Flask Auth0 Authentication Example
 
-This tutorial demonstrates how to add user login to a Python web application built with the Flask framework and Authlib OAuth library.
+This document explains how I implemented user login functionality in a Python web application using Flask and Auth0 with the Authlib OAuth library..
 
 ---
 
 ## I want to integrate with my app
-
-**Estimated time:** 15 minutes
 
 ### System requirements
 
@@ -16,9 +14,9 @@ This tutorial demonstrates how to add user login to a Python web application bui
 
 ---
 
-## Configure Auth0
+## Configured Auth0
 
-### Get Your Application Keys
+### Get the Application Keys
 
 When you sign up for Auth0, a new application is created for you (or you can create a new one).  
 You will need the following details from your Auth0 Application Settings:
@@ -27,14 +25,14 @@ You will need the following details from your Auth0 Application Settings:
 - **Client ID**
 - **Client Secret**
 
-### Configure Callback URLs
+### Configured Callback URLs
 
 Add the following to your Auth0 Application Settings:
 
 - **Allowed Callback URLs:**  
   `http://localhost:3000/callback`
 
-### Configure Logout URLs
+### Configured Logout URLs
 
 - **Allowed Logout URLs:**  
   `http://localhost:3000`
@@ -43,7 +41,7 @@ Add the following to your Auth0 Application Settings:
 
 ## Install dependencies
 
-Create a `requirements.txt` file:
+Created a `requirements.txt` file:
 
 ```txt
 flask>=2.0.3
@@ -52,7 +50,7 @@ authlib>=1.0
 requests>=2.27.1
 ```
 
-Install dependencies:
+Installed dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -62,7 +60,7 @@ pip install -r requirements.txt
 
 ## Configure your .env file
 
-Create a `.env` file in your project directory:
+Created a `.env` file in your project directory:
 
 ```properties
 AUTH0_CLIENT_ID=your_auth0_client_id
@@ -79,9 +77,8 @@ openssl rand -hex 32
 
 ---
 
-## Setup your application
-
-Create a `server.py` file and add the following:
+## Setup application
+Once after adding the quick-start guide code this is my final `server.py`
 
 ```python
 import json
@@ -163,7 +160,7 @@ if __name__ == "__main__":
 
 ## Add templates
 
-Create a `templates` directory and add these files:
+Created a `templates` directory and add these files:
 
 ### `templates/home.html`
 
@@ -206,7 +203,7 @@ Create a `templates` directory and add these files:
 
 ---
 
-## Run your application
+## Run application
 
 ```bash
 python3 server.py
@@ -218,7 +215,7 @@ Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Demo Video
 
-[Watch the 5-minute demo on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+[Watch the 5-minute demo on YouTube]([https://www.youtube.com/watch?v=YOUR_VIDEO_ID](https://www.youtube.com/watch?v=u6ZSNnYqSdc))
 
 ---
 
