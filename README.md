@@ -215,7 +215,7 @@ Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Demo Video
 
-[Watch the 5-minute demo on YouTube]([https://www.youtube.com/watch?v=u6ZSNnYqSdc])
+[Watch the 5-minute demo on YouTube](https://www.youtube.com/watch?v=u6ZSNnYqSdc)
 
 ---
 
